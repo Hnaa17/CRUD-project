@@ -1,12 +1,12 @@
 const Pool = require('../config/db');
 
-const selectAll = () => {
-    return Pool.query(`SELECT * FROM categories`);
+const selectAll = ({limit, offset, sortby, sort}) => {
+    return Pool.query(`SELECT * FROM categories ORDER BY ${sortby} ${sort} LIMIT ${limit} OFFSET ${offset}`);
 }
-const selectpagination = ({limit, offset, sortby, sort, querysearch}) => {
-    return Pool.query(`SELECT * FROM categories ${querysearch}  ORDER BY ${sortby} ${sort} LIMIT ${limit} OFFSET ${offset}`);
-}
-const selectID = (id) => {
+const searching = (search) =>{
+    return Pool.query("SELECT * FROM categories WHERE category_name ILIKE $1", [`%${search}%`]);
+};
+const selectCategories = (id) => {
     return Pool.query(`SELECT * FROM categories WHERE id=${id}`);
 }
 const insert = (category_name) => {
@@ -18,12 +18,16 @@ const update = (id, category_name) => {
 const deleteCategories = (id) => {
     return Pool.query(`DELETE FROM categories WHERE id=${id}`);
 }
+const countCategories = () => {
+    return Pool.query('SELECT COUNT(*) FROM categories')
+}
 
 module.exports = {
     selectAll,
-    selectpagination,
-    selectID,
+    searching,
+    selectCategories,
     insert,
     update,
-    deleteCategories
+    deleteCategories,
+    countCategories
 }

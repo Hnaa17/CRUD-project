@@ -7,41 +7,41 @@ const categoriesController = {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
             const offset = (page - 1) * limit;
-            const search = req.query.search;
-            let querysearch = '';
-            if (search === undefined) {
-                querysearch = ``;
-            } else {
-                querysearch = ` where category_name  like '%${search}%' `;
-            }
-            const sortby = req.query.sortby || ('id');
-            const sort = req.query.sort || 'asc';
-            const result = await categoryModel.selectpagination({limit, offset, sortby, sort, querysearch});
-            const totalData = parseInt((await categoryModel.selectAll()).rowCount);
+            const sortby = req.query.sortby || ('category_name');
+            const sort = req.query.sort || 'ASC';
+            const result = await categoriesModel.selectAll({limit, offset, sortby, sort});
+            const {rows:[count]} = await categoriesModel.countCategories();
+            const totalData = parseInt(count.count);
             const totalPage = Math.ceil(totalData / limit);
             res.status(200).json({
              pagination: {
-                currentPage: page,
+                page: page,
                 limit: limit,
                 totalData: totalData,
                 totalPage: totalPage
                 },
                 data: result.rows
             })
-            } catch (error) {
+        } catch (error) {
             res.send(createError(404));
-            }
-        },
+        }
+    },
+    search: (req, res) => {
+        const search = req.query.search ||"";
+        categoriesModel.searching(search)
+        .then(result => res.json(result.rows))
+        .catch(err => res.send(err));
+    },
     getCategories: async (req, res) => {
         try {
             const id = Number(req.params.id);
-            const result = await categoryModel.selectID(id);
+            const result = await categoriesModel.selectCategories(id);
             res.status(200).json(result.rows);
         } catch (error) {
           res.send(createError(404));
         }
     },
-    insert: async (req, res) => {
+    insertCategories: async (req, res) => {
         try {
             const {category_name} = req.body;
             await categoriesModel.insert(category_name);
@@ -50,7 +50,7 @@ const categoriesController = {
             res.send(createError(400));
         }
     },
-    update: async (req, res) => {
+    updateCategories: async (req, res) => {
         try {
             const id = Number(req.params.id);
             const {category_name} = req.body;
@@ -60,11 +60,11 @@ const categoriesController = {
             res.send(createError(400))
         }
     },
-    delete: async (req, res) => {
+    deleteCategory: async (req, res) => {
         try {
             const id = Number(req.params.id);
             await categoriesModel.deleteCategories(id);
-            res.status(200).json({message: "Category Deleted"});
+            res.status(200).json({message: "Category deleted"});
         } catch (error) {
             res.send(createError(404));
         }

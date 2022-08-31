@@ -19,6 +19,7 @@
     "http-errors": "^2.0.0",
     "lint": "^1.1.2",
     "pg": "^8.7.3",
+    "xss-clean": "^0.1.1",
     "yarn": "^1.22.19"
   },
   "devDependencies": {

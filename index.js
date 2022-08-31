@@ -3,6 +3,7 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
+const xss = require('xss-clean')
 const createError = require('http-errors');
 const productRouter = require('./src/routes/products');
 const categoryRouter = require('./src/routes/categories');
@@ -15,6 +16,7 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
+app.use(xss());
 
 app.use('/products', productRouter);
 app.use('/categories', categoryRouter);
@@ -29,10 +31,13 @@ app.use((err, req, res, next) => {
     const messageError = err.message || "internal server error"
     const statusCode = err.status || 500
 
-    res.status(statusCode).json({
-        message : messageError
-    })
-})
+    if (res.status(statusCode)) {
+        res.json({
+            message: `${messageError}`
+        })
+    }
+    next()
+});
 
 const host = process.env.DB_HOST;
 const port = process.env.PORT;
